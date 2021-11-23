@@ -84,20 +84,16 @@ UPDATE_FB_TOKEN_WINDOW = 5
 POLL_ONLY = "poll only"
 
 
-class PUSH_ACTION(object):
-    #FIREBASE_CONFIG = "push_firebase_configuration"
-    #REGISTRATION_URL = "push_registration_url"
+class BMOBI_ACTION(object):
+    APIGATEWAY_URL="bmobi_apigateway_url"
+    APIGATEWAY_USER="bmobi_apigateway_user"
+    APIGATEWAY_PASSWORD="bmobi_apigateway_password"
     TTL = "push_ttl"
-    MOBILE_TEXT = "push_text_on_mobile"
+    MOBILE_TEXT = "push_tex_on_mobile"
     MOBILE_TITLE = "push_title_on_mobile"
     SSL_VERIFY = "push_ssl_verify"
     WAIT = "push_wait"
     ALLOW_POLLING = "push_allow_polling"
-    APIGATEWAY_URL="apigateway_url"
-    APIGATEWAY_USER="apigateway_user"
-    APIGATEWAY_PASSWORD="apigateway_password"
-
-
 class PushAllowPolling(object):
     ALLOW = 'allow'
     DENY = 'deny'
@@ -183,14 +179,14 @@ def _build_smartphone_data(serial, challenge, registration_url, pem_privkey, opt
     :return: the created smartphone_data dictionary
     :rtype: dict
     """
-    sslverify = get_action_values_from_options(SCOPE.AUTH, PUSH_ACTION.SSL_VERIFY,
+    sslverify = get_action_values_from_options(SCOPE.AUTH, BMOBI_ACTION.SSL_VERIFY,
                                                options) or "1"
     sslverify = getParam({"sslverify": sslverify}, "sslverify",
                          allowed_values=["0", "1"], default="1")
     message_on_mobile = get_action_values_from_options(SCOPE.AUTH,
-                                                       PUSH_ACTION.MOBILE_TEXT,
+                                                       BMOBI_ACTION.MOBILE_TEXT,
                                                        options) or DEFAULT_MOBILE_TEXT
-    title = get_action_values_from_options(SCOPE.AUTH, PUSH_ACTION.MOBILE_TITLE,
+    title = get_action_values_from_options(SCOPE.AUTH, BMOBI_ACTION.MOBILE_TITLE,
                                            options) or "privacyIDEA"
     smartphone_data = {"nonce": challenge,
                        "question": message_on_mobile,
@@ -211,22 +207,6 @@ def _build_smartphone_data(serial, challenge, registration_url, pem_privkey, opt
                                  hashes.SHA256())
     smartphone_data["signature"] = b32encode_and_unicode(signature)
     return smartphone_data
-
-
-def _build_verify_object(pubkey_pem):
-    """
-    Load the given stripped and urlsafe public key and return the verify object
-
-    :param pubkey_pem:
-    :return:
-    """
-    # The public key of the smartphone was probably sent as urlsafe:
-    pubkey_pem = pubkey_pem.replace("-", "+").replace("_", "/")
-    # The public key was sent without any header
-    pubkey_pem = "-----BEGIN PUBLIC KEY-----\n{0!s}\n-----END PUBLIC KEY-----".format(pubkey_pem.strip().replace(" ", "+"))
-    return serialization.load_pem_public_key(to_bytes(pubkey_pem), default_backend())
-
-
 class BmobiTokenClass(TokenClass):
     """
     The :ref:`push_token` uses the firebase service to send challenges to the
@@ -303,23 +283,8 @@ class BmobiTokenClass(TokenClass):
                'ui_enroll': ["admin", "user"],
                'policy': {
                    SCOPE.ENROLL: {
-                 	PUSH_ACTION.APIGATEWAY_URL: {
-                           'type': 'str',
-                           'desc': _('The Url of Apigateway'),
-                           'group': 'BMOBI'
-                       },
-                       PUSH_ACTION.APIGATEWAY_USER: {
-                           'type': 'str',
-                           'desc': _('Authorized Apigateway username'),
-                           'group': 'BMOBI'
-                       },
-                       PUSH_ACTION.APIGATEWAY_PASSWORD: {
-                           'type': 'str',
-                           'desc': _('Authorized user password for Apigateway'),
-                           'group': 'BMOBI'
-                       },
-                 
-                       PUSH_ACTION.TTL: {
+
+                       BMOBI_ACTION.TTL: {
                            'type': 'int',
                            'group': "BMOBI",
                            'desc': _('The second enrollment step must be completed within this time (in minutes).')
@@ -334,32 +299,50 @@ class BmobiTokenClass(TokenClass):
                            'type': 'int',
                            'desc': _("The user may only have this maximum number of active Push tokens assigned."),
                            'group': GROUP.TOKEN
-                       }
+                       },
+                   
+                       
                    },
                    SCOPE.AUTH: {
-                       PUSH_ACTION.MOBILE_TEXT: {
+                       BMOBI_ACTION.APIGATEWAY_URL: {
+                           'type': 'str',
+                           'desc': _('The Url of Apigateway'),
+                           'group': 'BMOBI'
+                       },
+                       BMOBI_ACTION.APIGATEWAY_USER: {
+                           'type': 'str',
+                           'desc': _('Authorized Apigateway username'),
+                           'group': 'BMOBI'
+                       },
+                       BMOBI_ACTION.APIGATEWAY_PASSWORD: {
+                           'type': 'str',
+                           'desc': _('Authorized user password for Apigateway'),
+                           'group': 'BMOBI'
+                       },
+                 
+                       BMOBI_ACTION.MOBILE_TEXT: {
                            'type': 'str',
                            'desc': _('The question the user sees on his mobile phone.'),
                            'group': 'BMOBI'
                        },
-                       PUSH_ACTION.MOBILE_TITLE: {
+                       BMOBI_ACTION.MOBILE_TITLE: {
                            'type': 'str',
                            'desc': _('The title of the notification, the user sees on his mobile phone.'),
                            'group': 'BMOBI'
                        },
-                       PUSH_ACTION.SSL_VERIFY: {
+                       BMOBI_ACTION.SSL_VERIFY: {
                            'type': 'str',
                            'desc': _('The smartphone needs to verify SSL during authentication. (default 1)'),
                            'group': "BMOBI",
                            'value': ["0", "1"]
                        },
-                       PUSH_ACTION.WAIT: {
+                       BMOBI_ACTION.WAIT: {
                            'type': 'int',
                            'desc': _('Wait for number of seconds for the user '
                                      'to confirm the challenge in the first request.'),
                            'group': "BMOBI"
                        },
-                       PUSH_ACTION.ALLOW_POLLING: {
+                       BMOBI_ACTION.ALLOW_POLLING: {
                            'type': 'str',
                            'desc': _('Configure whether to allow push tokens to poll for '
                                      'challenges'),
@@ -437,7 +420,7 @@ class BmobiTokenClass(TokenClass):
             self.add_tokeninfo("enrollment_credential", geturandom(20, hex=True))
             # We also store the firebase config, that was used during the enrollment.
             #commented
-            #self.add_tokeninfo(PUSH_ACTION.FIREBASE_CONFIG, param.get(PUSH_ACTION.FIREBASE_CONFIG))
+            #self.add_tokeninfo(BMOBI_ACTION.FIREBASE_CONFIG, param.get(BMOBI_ACTION.FIREBASE_CONFIG))
         else:
             raise ParameterError("Invalid Parameters. Either provide (genkey) or (serial, fbtoken, pubkey).")
 
@@ -458,7 +441,7 @@ class BmobiTokenClass(TokenClass):
         user = user or User()
         tokenlabel = params.get("tokenlabel", "<s>")
         tokenissuer = params.get("tokenissuer", "privacyIDEA")
-        sslverify = getParam(params, PUSH_ACTION.SSL_VERIFY, allowed_values=["0", "1"], default="1")
+        sslverify = getParam(params, BMOBI_ACTION.SSL_VERIFY, allowed_values=["0", "1"], default="1")
         # Add rollout state the response
         response_detail['rollout_state'] = self.token.rollout_state
 
@@ -468,10 +451,10 @@ class BmobiTokenClass(TokenClass):
             extra_data.update({"image": imageurl})
         if self.token.rollout_state == "clientwait":
             # Get enrollment values from the policy
-            #registration_url = getParam(params, PUSH_ACTION.REGISTRATION_URL, optional=False)
-            ttl = getParam(params, PUSH_ACTION.TTL, default="10")
+            #registration_url = getParam(params, BMOBI_ACTION.REGISTRATION_URL, optional=False)
+            ttl = getParam(params, BMOBI_ACTION.TTL, default="10")
             # Get the values from the configured PUSH config
-            #fb_identifier = params.get(PUSH_ACTION.FIREBASE_CONFIG)
+            #fb_identifier = params.get(BMOBI_ACTION.FIREBASE_CONFIG)
             #if fb_identifier != POLL_ONLY:
                 # If do not do poll_only, then we load all the firebase configuration
             #     firebase_configs = get_smsgateway(identifier=fb_identifier, gwtype=GWTYPE)
@@ -603,12 +586,6 @@ class BmobiTokenClass(TokenClass):
             cls._check_timestamp_in_range(timestamp, UPDATE_FB_TOKEN_WINDOW)
             try:
                 tok = get_one_token(serial=serial, tokentype=cls.get_class_type())
-                pubkey_obj = _build_verify_object(tok.get_tokeninfo(PUBLIC_KEY_SMARTPHONE))
-                sign_data = u"{new_fb_token}|{serial}|{timestamp}".format(**request_data)
-                pubkey_obj.verify(b32decode(signature),
-                                  sign_data.encode("utf8"),
-                                  padding.PKCS1v15(),
-                                  hashes.SHA256())
                 # If the timestamp and signature are valid we update the token
                 tok.add_tokeninfo('firebase_token', request_data['new_fb_token'])
                 result = True
@@ -641,7 +618,7 @@ class BmobiTokenClass(TokenClass):
        
         # By default we allow polling if the policy is not set.
         allow_polling = get_action_values_from_options(
-            SCOPE.AUTH, PUSH_ACTION.ALLOW_POLLING,
+            SCOPE.AUTH, BMOBI_ACTION.ALLOW_POLLING,
             options={'g': g}) or PushAllowPolling.ALLOW
         if allow_polling == PushAllowPolling.DENY:
             raise PolicyError('Polling not allowed!')
@@ -665,18 +642,13 @@ class BmobiTokenClass(TokenClass):
                               'tokeninfo.'.format(serial))
                     raise PolicyError('Polling not allowed!')
 
-            pubkey_obj = _build_verify_object(tok.get_tokeninfo(PUBLIC_KEY_SMARTPHONE))
-            sign_data = u"{serial}|{timestamp}".format(**request_data)
-            pubkey_obj.verify(b32decode(signature),
-                              sign_data.encode("utf8"),
-                              padding.PKCS1v15(),
-                              hashes.SHA256())
+
             # The signature was valid now check for an open challenge
             # we need the private server key to sign the smartphone data
             pem_privkey = tok.get_tokeninfo(PRIVATE_KEY_SERVER)
             # We need the registration URL for the challenge
             #registration_url = get_action_values_from_options(
-            #    SCOPE.ENROLL, PUSH_ACTION.REGISTRATION_URL, options={'g': g})
+            #    SCOPE.ENROLL, BMOBI_ACTION.REGISTRATION_URL, options={'g': g})
             #if not registration_url:
             #    raise ResourceNotFoundError('There is no registration_url defined for the '
             #                                ' pushtoken {0!s}. You need to define a push_registration_url '
@@ -797,12 +769,12 @@ class BmobiTokenClass(TokenClass):
 
         :return: returns true or false
         """
-        if options.get(PUSH_ACTION.WAIT):
+        if options.get(BMOBI_ACTION.WAIT):
             # We have a push_wait in the parameters
             return False
         return self.check_pin(passw, user=user, options=options)
 
-    def create_challenge(self, transactionid=None, options=None):
+    def create_challenge(self, transactionid=None, options=None,user=None):
         """
         This method creates a challenge, which is submitted to the user.
         The submitted challenge will be preserved in the challenge
@@ -833,11 +805,15 @@ class BmobiTokenClass(TokenClass):
 
 
 
+
         data = None
         # Initially we assume there is no error from Firebase
         res = True
         attributes = None
         challenge = b32encode_and_unicode(geturandom())
+        api_url = get_action_values_from_options(SCOPE.AUTH, BMOBI_ACTION.APIGATEWAY_URL, options)
+        api_user = get_action_values_from_options(SCOPE.AUTH, BMOBI_ACTION.APIGATEWAY_USER, options)
+        api_password = get_action_values_from_options(SCOPE.AUTH, BMOBI_ACTION.APIGATEWAY_PASSWORD, options)
         
         validity = int(get_from_config('DefaultChallengeValidityTime', 120))
         db_challenge = Challenge(self.token.serial,
@@ -852,6 +828,9 @@ class BmobiTokenClass(TokenClass):
         pem_privkey = tok.get_tokeninfo(PRIVATE_KEY_SERVER)
         registration_url = "/ttype/bmobi"        
         smartphone_data = _build_smartphone_data(self.token.serial,challenge, registration_url,pem_privkey, options)
+        myobj = {'state': transactionid,'nonce':challenge,'signature':smartphone_data["signature"]}
+    	
+        resp = requests.post(api_url, data={'state': transactionid,'nonce':challenge,'signature':smartphone_data["signature"],'serial':self.token.serial}, auth=(api_user, api_password))
        
         
         attributes = {'state': transactionid,'nonce':challenge,'signature':smartphone_data["signature"]}#,'signature':sp_data["signature"]}#,'challange':challenge,'data',data}
@@ -862,9 +841,7 @@ class BmobiTokenClass(TokenClass):
         
         #url = 'https://www.w3schools.com/python/demopage.php'
     	
-    	#myobj = {'transactionid': transactionid}
     	
-    	#r = requests.post(url, data = myobj)
 
         return res, message, db_challenge.transaction_id, attributes
 
@@ -902,9 +879,9 @@ class BmobiTokenClass(TokenClass):
         if pin_match:
             if not options.get("valid_token_num"):
                 # We should only do push_wait, if we do not already have successfully authenticated tokens!
-                waiting = int(options.get(PUSH_ACTION.WAIT, 20))
+                waiting = int(options.get(BMOBI_ACTION.WAIT, 20))
                 # Trigger the challenge
-                _t, _m, transaction_id, _attr = self.create_challenge(options=options)
+                _t, _m, transaction_id, _attr = self.create_challenge(options=options,user=user)
                 # now we need to check and wait for the response to be answered in the challenge table
                 starttime = time.time()
                 while True:
