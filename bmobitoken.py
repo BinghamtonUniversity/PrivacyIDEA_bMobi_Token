@@ -23,8 +23,6 @@ __doc__ = """The pushtoken sends a push notification via firebase
 to the registered smartphone.
 The token is a challenge response token. The smartphone will sign the challenge
 and send it back to the authentication endpoint. 
-
-This code is tested in tests/test_lib_tokens_push
 """
 
 from base64 import b32decode
