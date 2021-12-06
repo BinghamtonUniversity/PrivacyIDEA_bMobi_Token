@@ -87,7 +87,7 @@ class BMOBI_ACTION(object):
     APIGATEWAY_USER="bmobi_apigateway_user"
     APIGATEWAY_PASSWORD="bmobi_apigateway_password"
     TTL = "push_ttl"
-    MOBILE_TEXT = "push_tex_on_mobile"
+    MOBILE_TEXT = "push_text_on_mobile"
     MOBILE_TITLE = "push_title_on_mobile"
     SSL_VERIFY = "push_ssl_verify"
     WAIT = "push_wait"
@@ -255,7 +255,7 @@ class BmobiTokenClass(TokenClass):
 
     @staticmethod
     def get_class_prefix():
-        return "BMOBI"
+        return "PIBM"
 
     @staticmethod
     def get_class_info(key=None, ret='all'):
@@ -273,7 +273,7 @@ class BmobiTokenClass(TokenClass):
         """
         gws = get_smsgateway(gwtype=GWTYPE)
         res = {'type': 'bmobi',
-               'title': _('bmobi Token'),
+               'title': _('BMOBI Token'),
                'description':
                     _('BMOBI: Send notification to a APIGATEWAY.'),
                'user': ['enroll'],
